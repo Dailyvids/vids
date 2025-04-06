@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dailyvids - Video</title>
+    <title>Dailyvids - Watch & Save Video</title>
 
-    <!-- Include Video.js CSS -->
+    <!-- Video.js CSS -->
     <link href="https://cdn.jsdelivr.net/npm/video.js@8.22.0/dist/video-js.min.css" rel="stylesheet" />
-
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -91,7 +91,7 @@
 <body>
 
 <header>
-    <h1>Dailyvids - Watch Video</h1>
+    <h1>Dailyvids - Watch & Save Video</h1>
 </header>
 
 <main>
@@ -100,7 +100,7 @@
         
         <!-- Video.js Player -->
         <video id="video-player" class="video-js vjs-default-skin" controls>
-            <source id="video-source" src="" type="video/mp4">
+            <source id="video-source" src="your-video.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
 
@@ -122,30 +122,40 @@
 <script src="https://cdn.jsdelivr.net/npm/video.js@8.22.0/dist/video.min.js"></script>
 
 <script>
-    // Generate a random 20-character ID when a video is uploaded
-    function generateRandomId() {
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let result = '';
-        for (let i = 0; i < 20; i++) {
-            result += characters.charAt(Math.floor(Math.random() * characters.length));
-        }
-        return result;
+    // Initialize the Video.js player
+    const player = videojs('video-player');
+
+    // Function to start recording
+    function startRecording() {
+        const stream = player.el().querySelector('video').captureStream();
+        const recorder = new MediaRecorder(stream);
+        const chunks = [];
+
+        recorder.ondataavailable = event => {
+            chunks.push(event.data);
+        };
+
+        recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'recorded-video.webm';
+            a.click();
+        };
+
+        recorder.start();
+        // Stop recording after the video's duration
+        setTimeout(() => recorder.stop(), player.duration() * 1000);
     }
 
-    // Get video ID from the fragment (e.g., #123456)
-    const urlFragment = window.location.hash;
-    let videoId = urlFragment ? urlFragment.slice(1) : null;
-
-    if (videoId) {
-        document.getElementById('video-title').textContent = "Video found: " + videoId;
-    } else {
-        document.getElementById('video-title').textContent = "No video selected";
-        document.getElementById('video-description').textContent = "Please choose a video to upload.";
-    }
+    // Start recording when the video is ready
+    player.ready(() => {
+        startRecording();
+    });
 
     // Handle video file upload
     const fileInput = document.getElementById('file-input');
-    const videoPlayer = document.getElementById('video-player');
     const videoSource = document.getElementById('video-source');
     const uploadButton = document.getElementById('upload-btn');
 
@@ -160,13 +170,9 @@
         if (file && file.type === 'video/mp4') {
             const videoUrl = URL.createObjectURL(file); // Create a URL for the uploaded video
             videoSource.src = videoUrl;
-            videoPlayer.load(); // Reload the video player to play the new video
+            player.load(); // Reload the video player to play the new video
 
-            // Generate a random 20-character video ID and update the URL fragment
-            videoId = generateRandomId();
-            window.location.hash = videoId; // Update the URL with the new fragment
-
-            document.getElementById('video-title').textContent = `Video ID: ${videoId}`;
+            document.getElementById('video-title').textContent = `Video Uploaded`;
             document.getElementById('video-description').textContent = "Enjoy your uploaded video!";
         } else {
             alert('Please select a valid MP4 video file.');
