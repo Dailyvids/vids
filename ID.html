@@ -120,12 +120,16 @@
 </footer>
 
 <script>
-    // Get video ID from the query string (e.g., ?id=123)
+    // Generate a random ID when a video is uploaded
+    function generateRandomId() {
+        return Math.floor(Math.random() * 1000000); // Generates a random ID (e.g., 123456)
+    }
+
+    // Get video ID from the query string (e.g., ?id=123456)
     const urlParams = new URLSearchParams(window.location.search);
-    const videoId = urlParams.get('id');
+    let videoId = urlParams.get('id');
     
     if (videoId) {
-        // If a video ID is present, try loading a video (future feature)
         document.getElementById('video-title').textContent = "Video found: " + videoId;
     } else {
         document.getElementById('video-title').textContent = "No video selected";
@@ -150,7 +154,12 @@
             const videoUrl = URL.createObjectURL(file); // Create a URL for the uploaded video
             videoSource.src = videoUrl;
             videoPlayer.load(); // Reload the video player to play the new video
-            document.getElementById('video-title').textContent = file.name;
+
+            // Generate a random video ID and update the URL
+            videoId = generateRandomId();
+            window.history.pushState({}, "", `?id=${videoId}`);
+
+            document.getElementById('video-title').textContent = `Video ID: ${videoId}`;
             document.getElementById('video-description').textContent = "Enjoy your uploaded video!";
         } else {
             alert('Please select a valid MP4 video file.');
