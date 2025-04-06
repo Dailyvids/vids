@@ -120,15 +120,20 @@
 </footer>
 
 <script>
-    // Generate a random ID when a video is uploaded
+    // Generate a random 20-character ID when a video is uploaded
     function generateRandomId() {
-        return Math.floor(Math.random() * 1000000); // Generates a random ID (e.g., 123456)
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < 20; i++) {
+            result += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return result;
     }
 
-    // Get video ID from the query string (e.g., ?id=123456)
-    const urlParams = new URLSearchParams(window.location.search);
-    let videoId = urlParams.get('id');
-    
+    // Get video ID from the fragment (e.g., #123456)
+    const urlFragment = window.location.hash;
+    let videoId = urlFragment ? urlFragment.slice(1) : null;
+
     if (videoId) {
         document.getElementById('video-title').textContent = "Video found: " + videoId;
     } else {
@@ -155,9 +160,9 @@
             videoSource.src = videoUrl;
             videoPlayer.load(); // Reload the video player to play the new video
 
-            // Generate a random video ID and update the URL
+            // Generate a random 20-character video ID and update the URL fragment
             videoId = generateRandomId();
-            window.history.pushState({}, "", `?id=${videoId}`);
+            window.location.hash = videoId; // Update the URL with the new fragment
 
             document.getElementById('video-title').textContent = `Video ID: ${videoId}`;
             document.getElementById('video-description').textContent = "Enjoy your uploaded video!";
